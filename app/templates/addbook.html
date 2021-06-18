@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+
+{% block card_header %}
+    <span><a href="/index"> 图书管理 / </a></span><span>图书入库</span>
+{% endblock %}
+
+{% block card_body %}
+<div class="layui-row">
+<div class="layui-row layui-col-md5">
+    <form class="layui-form" method="post">
+        <!-- 必须添加 form.csrf_token ,否则表单验证不通过 -->
+        {{ form.csrf_token }}
+        <!-- 必须添加 form.csrf_token ,否则表单验证不通过 -->
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">图书编号：</label>
+            <div class="layui-input-inline">
+                {{ form.book_id(class="layui-input",placeholder="",autocomplete="on") }}
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">ISBN：</label>
+            <div class="layui-input-inline">
+                {{ form.isbn(class="layui-input",placeholder="",autocomplete="on") }}
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">书名：</label>
+            <div class="layui-input-inline">
+                {{ form.name(class="layui-input",placeholder="",autocomplete="on") }}
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">作者：</label>
+            <div class="layui-input-inline">
+                {{ form.author(class="layui-input",placeholder="",autocomplete="on") }}
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">出版社：</label>
+            <div class="layui-input-inline">
+                {{ form.press(class="layui-input",placeholder="",autocomplete="on") }}
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">类别：</label>
+            <div class="layui-input-inline">
+                {{ form.category }}
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">位置：</label>
+            <div class="layui-input-inline">
+                {{ form.location(class="layui-input",placeholder="",autocomplete="on") }}
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">简介：</label>
+            <div class="layui-input-inline">
+                {{ form.brefintro(class="layui-textarea",placeholder="",autocomplete="on") }}
+            </div>
+        </div>
+        <div class="layui-input-inline login-btn" style="margin-left: 150px">
+            {{ form.submit(class="layui-btn",id="addsubmit") }}
+        </div>
+        <div class="layui-form-item" hidden>
+            <div class="layui-input-inline" >
+                {{ form.cover(class="layui-input",placeholder="",autocomplete="on",id="pagecoverurl") }}
+            </div>
+        </div>
+    </form>
+</div>
+<div class="layui-row layui-col-md4">
+    <img src="../static/img/cover/defaultcover.jpg" style="width: 150px;height: 200px" id="pagecover">
+    <div style="margin-top: 10px;margin-left: 20px">
+        <button type="button" class="layui-btn" id="pagecoverbtn">
+          <i class="layui-icon">&#xe67c;</i>添加封面
+        </button>
+    </div>
+    <div style="margin-top: 130px">
+        <div class="layui-form-item">
+            <label class="layui-form-label">ISBN：</label>
+            <div class="layui-input-inline">
+                <input type="text" class="layui-input" id="isbn2" placeholder="输入书库中该书的ISBN" >
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">图书编号：</label>
+            <div class="layui-input-inline">
+                <input type="text" class="layui-input" id="book_id2" placeholder="输入新增的图书编号">
+            </div>
+        </div>
+        <div style="margin-top: 10px;margin-left: 100px">
+            <button type="button" class="layui-btn" id="addinventory">
+              添加库存
+            </button>
+        </div>
+    </div>
+
+</div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script src="../static/layui/layui.js"></script>
+<script src="../static/jquery/jquery.min.js"></script>
+<script>
+layui.use(['layer','form'], function(){
+    var layer = layui.layer;
+    var form = layui.form;
+    {% for message in get_flashed_messages() %}
+        layer.msg('{{ message }}');
+    {% endfor %}
+});
+
+layui.use('upload', function(){
+              var upload = layui.upload;
+              //执行实例
+              var uploadFile = upload.render({
+                    elem: '#pagecoverbtn',
+                    url: '{{ url_for('main.add_bookcover_api') }}',
+                    accept: 'images',
+                    acceptMime: 'image/jpeg',
+                    headers: {access_token: localStorage.access_token},
+                    auto: true,
+                    //bindAction:'#addsubmit',
+                    data:{username:$("#uname").val()},
+                    choose: function(obj){
+                        obj.preview(function(index, file, result){
+                            $("#pagecover").attr('src',result);
+                        });
+                      }
+                  , done: function (res) {
+                        //上传完毕回调
+                        layer.close(layer.index); //关闭loading
+                        console.log(res.data['src'])
+                        // 将返回的 url 赋给form表单的隐藏元素
+                        $("#pagecoverurl").val(res.data['src'])
+
+                    }
+                    , error: function (res) {
+                        //请求异常回调
+                        console.error(res);
+                    }
+                });
+
+            });
+
+$("#addinventory").on('click',function (){
+    var isbn = $("#isbn2").val()
+    var book_id = $("#book_id2").val()
+    $.post('{{ url_for('main.addinventory_api') }}',{isbn:isbn,book_id:book_id},function (str){
+        console.log(str)
+        if(str.status==0)
+            layer.msg('图书添加成功')
+        else
+            layer.msg('该图书不存在')
+    })
+})
+
+</script>
+{% endblock %}

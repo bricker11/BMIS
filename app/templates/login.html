@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>欢迎登陆</title>
+    <link rel="icon" href="{{ url_for('static',filename='favicon.ico') }}" type="image/x-icon">
+    <link rel="stylesheet" href="../static/layui/css/layui.css">
+    <link rel="stylesheet" href="../static/static/css/style.css">
+    <link rel="stylesheet" href="../static/bootstrap/css/bootstrap.css">
+    <script type="text/javascript" src="../static/bootstrap/jquery.js"></script>
+    <script type="text/javascript" src="../static/bootstrap/js/bootstrap.js"></script>
+    <link rel="icon" href="../static/img/favicon.ico" type="image/x-icon">
+</head>
+<body style="background-image: url('../static/img/bg2.jpg');background-size: 100%">
+
+<div class="layui-layout-body" >
+   <div class="login-main">
+    <header class="layui-elip">欢迎登录</header>
+    <form class="layui-form" method="post">
+        {{ form.csrf_token}}
+        <div class="layui-input-inline">
+            {{ form.username(class="layui-input",placeholder="用户名",autocomplete="on") }}
+        </div>
+        <div class="layui-input-inline">
+            {{ form.password(class="layui-input",placeholder="密码",autocomplete="on") }}
+        </div>
+        <div class="layui-input-inline login-btn">
+            {{ form.submit(class="layui-btn") }}
+        </div>
+        <hr/>
+        <p><a href="{{ url_for('main.register') }}" class="fl">立即注册</a><a href="javascript:;" class="fr">忘记密码？</a></p>
+    </form>
+    </div>
+</div>
+
+<script src="../static/layui/layui.js"></script>
+<script>
+layui.use(['layer'], function(){
+    var layer = layui.layer
+    {% for message in get_flashed_messages() %}
+        layer.msg('{{ message }}');
+    {% endfor %}
+});
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,139 @@
+{% extends 'reader/base.html' %}
+
+{% block card_header %}
+<span><a href="/reader/index"> 图书借还 / </a></span><span>我的图书</span>
+{% endblock %}
+
+
+{% block card_body %}
+
+    <!-- 数据表格区域 -->
+    <div style="margin-top: 20px">
+        <table id="returnlist" lay-filter="returnlist"></table>
+    </div>
+
+    <div id="optionbtn" hidden>
+        <button type="button" class="layui-btn layui-btn-xs layui-btn-normal return">
+        归还
+        </button>
+        <button type="button" class="layui-btn layui-btn-xs layui-btn-warm trans">
+        转借
+        </button>
+    </div>
+
+
+{% endblock %}
+
+{% block outest %}
+{% endblock %}
+
+
+{% block script %}
+<script src="../../static/layui/layui.js"></script>
+<script src="../../static/jquery/jquery.min.js"></script>
+<script>
+layui.use(['layer'], function(){
+    var layer = layui.layer
+    {% for message in get_flashed_messages() %}
+        layer.msg('{{ message }}');
+    {% endfor %}
+});
+
+layui.use('form', function(){
+  var form = layui.form;
+});
+
+layui.use('table', function(){
+  var table = layui.table;
+
+  <!-- 表格渲染 -->
+  table.render({
+    elem: '#returnlist'
+    ,height: 450
+    ,url: '{{ url_for('reader.mybooklist_api') }}' //数据接口
+    ,page: true //开启分页
+    ,loading: true
+    ,cols: [[ //表头
+      {field: 'sno', title: '序号', width:80, fixed: 'left'}
+      ,{field: 'book_id', title: '图书编号', width:120, align:'center'}
+      ,{field: 'bookname', title: '借阅书名', width:200, align:'center'}
+      ,{field: 'author', title: '作者', width: 150, align:'center'}
+      ,{field: 'press', title: '出版社', width: 150, sort: true, align:'center'}
+      ,{field: 'press', title: '借阅时间', width: 150, align:'center'}
+      ,{field: 'press', title: '到期时间', width: 150, align:'center'}
+      ,{field: 'status', title: '状态', width: 100, align:'center'}
+      ,{field: 'opration', title: '操作', width: 140, align:'center', templet: '#optionbtn'}
+    ]]
+    ,done:function (){
+        //为内嵌按钮绑定事件
+        $(".return").click(function(e) {
+            var book_id = e.currentTarget.parentNode.parentNode.parentNode.childNodes[1].innerText
+            console.log(book_id)
+            layer.open({
+                content: '确认归还？',
+                yes: function(index, layero){
+                    $.post('{{ url_for('reader.returnok_api') }}', {book_id:book_id}, function(str){
+                        console.log('请求完毕')
+                    })
+                    layer.close(index); //如果设定了yes回调，需进行手工关闭
+                    location.reload();
+                }
+            });
+
+        })
+        $(".trans").click(function(e) {
+            var book_id = e.currentTarget.parentNode.parentNode.parentNode.childNodes[1].innerText
+            console.log(book_id)
+            layer.open({
+                content: '<div class="layui-form-item" id="transinfo">\
+                                <label class="layui-form-label">转借人证件号：</label>\
+                                <div class="layui-input-inline">\
+                                    <input class="layui-input" name="transid" id="transid">\
+                                </div>\
+                            </div>',
+                yes: function(index, layero){
+                    transid = $("#transid").val()
+                    $.post('{{ url_for('reader.transok_api') }}', {book_id:book_id,transid:transid}, function(str){
+                        if(str.status == 0)
+                        {
+                            layer.open({
+                            content: '转借成功',
+                            yes: function(index, layero){
+                                layer.close(index);
+                                location.reload();
+                            }
+                            })
+                        }
+                        else if (str.status == 1)
+                        {
+                            layer.open({
+                            content: '图书归还中，无法转借',
+                            yes: function(index, layero){
+                                layer.close(index);
+                                location.reload();
+                            }
+                            })
+                        }
+                        else
+                        {
+                            layer.open({
+                            content: '该证件号不存在，请重新核对',
+                            yes: function(index, layero){
+                                layer.close(index);
+                                location.reload();
+                            }
+                            })
+                        }
+                    })
+                    layer.close(index); //如果设定了yes回调，需进行手工关闭
+
+                }
+            });
+
+        })
+      }
+  });
+
+});
+</script>
+{% endblock %}

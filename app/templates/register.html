@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>欢迎注册</title>
+    <link rel="stylesheet" href="../static/layui/css/layui.css">
+    <link rel="stylesheet" href="../static/static/css/style.css">
+    <link rel="icon" href="../static/img/favicon.ico" type="image/x-icon">
+</head>
+<body style="background-image: url('../static/img/bg2.jpg');background-size: 100%">
+
+<div class="layui-layout-body">
+    <div class="register-main">
+        <header class="layui-elip">用户注册</header>
+        <form class="layui-form" method="post">
+        {{ form.csrf_token}}
+        <!-- 上半部分 -->
+        <div class="layui-row">
+            <div class="layui-row layui-col-md6">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">用户名：</label>
+                    <div class="layui-input-inline">
+                        {{ form.username(class="layui-input",placeholder="用户名",autocomplete="off",id="uname") }}
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">密码：</label>
+                    <div class="layui-input-inline">
+                        {{ form.password(class="layui-input",placeholder="密码",autocomplete="off") }}
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">确认密码：</label>
+                    <div class="layui-input-inline">
+                        {{ form.password2(class="layui-input",placeholder="确认密码",autocomplete="off") }}
+                    </div>
+                </div>
+            </div>
+        <!-- 头像区 -->
+            <div class="layui-row layui-col-md6" style="text-align: center">
+                <div>
+                    <img src="../static/img/avata/defaultavata.jpg" style="height: 170px;width: 170px" id="avataid">
+                </div>
+                <div style="margin-top: 10px">
+                    <button type="button" class="layui-btn" id="regavata">
+                      <i class="layui-icon">&#xe67c;</i>选择头像
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 下半部分（个人信息） -->
+        <div class="layui-row" style="margin-top: 10px ">
+            <div class="layui-row layui-col-md6">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">姓名：</label>
+                    <div class="layui-input-inline">
+                        {{ form.name(class="layui-input",placeholder="",autocomplete="on") }}
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">证件号：</label>
+                    <div class="layui-input-inline">
+                        {{ form.id(class="layui-input",placeholder="",autocomplete="on") }}
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">联系方式：</label>
+                    <div class="layui-input-inline">
+                        {{ form.contact(class="layui-input",placeholder="",autocomplete="on") }}
+                    </div>
+                </div>
+            </div>
+            <div class="layui-row layui-col-md6">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">性别：</label>
+                    <div class="layui-input-inline">
+                        {{ form.gender(class="layui-input") }}
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">队别：</label>
+                    <div class="layui-input-inline">
+                        {{ form.depart(class="layui-input",placeholder="",autocomplete="on") }}
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">房间号：</label>
+                    <div class="layui-input-inline">
+                        {{ form.room(class="layui-input",placeholder="",autocomplete="on") }}
+                    </div>
+                </div>
+                <div class="layui-form-item" hidden>
+                    <div class="layui-input-inline">
+                        {{ form.avata(class="layui-input",placeholder="",autocomplete="on",id="avataurl") }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="layui-row layui-col-md-offset6">
+            <div class="layui-input-inline login-btn" id="regsubmit">
+                {{ form.submit(class="layui-btn") }}
+            </div>
+        </div>
+        </form>
+    </div>
+</div>
+
+<script src="../static/layui/layui.js"></script>
+<script src="../static/jquery/jquery.min.js"></script>
+<script>
+
+
+
+layui.use('upload', function(){
+              var upload = layui.upload;
+              //执行实例
+              var uploadFile = upload.render({
+                    elem: '#regavata',
+                    url: '{{ url_for('main.register_avata_api') }}',
+                    accept: 'images',
+                    acceptMime: 'image/jpeg',
+                    headers: {access_token: localStorage.access_token},
+                    auto: true,
+                    //bindAction:'#regsubmit',
+                    data:{username:$("#uname").val()},
+                    choose: function(obj){
+                        obj.preview(function(index, file, result){
+                            $("#avataid").attr('src',result);
+                        });
+                      }
+                  , done: function (res) {
+                        //上传完毕回调
+                        layer.close(layer.index); //关闭loading
+                        console.log(res.data['src'])
+                        // 将返回的 url 赋给form表单的隐藏元素
+                        $("#avataurl").val(res.data['src'])
+
+                    }
+                    , error: function (res) {
+                        //请求异常回调
+                        console.error(res);
+                    }
+                });
+
+            });
+
+layui.use('form', function(){
+  var form = layui.form;
+});
+
+
+</script>
+
+</body>
+</html>

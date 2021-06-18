@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+
+{% block card_header %}
+<span><a href="/index"> 图书管理 / </a></span><span>图书统计</span>
+{% endblock %}
+
+{% block card_body %}
+<div class="layui-row" style="margin-top: 50px">
+    <div class="layui-row layui-col-md5" >
+        <div id="line" style="width: 100%;height:400px;"></div>
+        <div style="margin-top: 30px;text-align: center">
+            <p>借阅量/读者变化曲线</p>
+        </div>
+    </div>
+    <div class="layui-row layui-col-md5 layui-col-md-offset1">
+        <div id="pie" style="width: 100%;height:400px;"></div>
+        <div style="margin-top: 30px;text-align: center">
+            <p>库存图书分类占比</p>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block script %}
+
+<script src="../static/layui/layui.js"></script>
+<script>
+layui.use(['layer'], function(){
+    var layer = layui.layer
+    {% for message in get_flashed_messages() %}
+        layer.msg('{{ message }}');
+    {% endfor %}
+});
+</script>
+
+<script src="../static/echart/echarts.min.js"></script>
+<script src="../static/jquery/jquery.min.js"></script>
+
+<script type="text/javascript">
+    var myChart1 = echarts.init(document.getElementById('line'));
+    var option1;
+
+    option1 = {
+        title: {
+            text: ''
+        },
+        tooltip: {
+            trigger: 'axis'
+        },
+        legend: {
+            data: ['借阅图书', '借阅读者']
+        },
+        grid: {
+            left: '3%',
+            right: '4%',
+            bottom: '3%',
+            containLabel: true
+        },
+        toolbox: {
+            feature: {
+                saveAsImage: {}
+            }
+        },
+        xAxis: {
+            type: 'category',
+            boundaryGap: false,
+            data: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月']
+        },
+        yAxis: {
+            type: 'value'
+        },
+        series: [{
+            name: '借阅图书',
+            type: 'line',
+            data: [],
+            color: 'DeepSkyBlue'
+        },
+        {
+            name: '借阅读者',
+            type: 'line',
+            data: [],
+            color: 'DarkTurquoise'
+        }]
+    };
+
+    myChart1.setOption(option1);
+
+    $.get('{{ url_for('main.bookstatics_api1') }}').done(function (data) {
+        // 填入数据
+        console.log(data)
+        option1.series[0].data = data.book
+        option1.series[1].data = data.reader
+        myChart1.setOption(option1);
+    });
+</script>
+
+<script type="text/javascript">
+    var myChart2 = echarts.init(document.getElementById('pie'));
+    var option2;
+
+    option2 = {
+        legend: {
+            top: 'bottom'
+        },
+        toolbox: {
+            show: true,
+            feature: {
+                mark: {show: true},
+                dataView: {show: true, readOnly: true},
+                restore: {show: true},
+                saveAsImage: {show: true}
+            }
+        },
+        series: [
+            {
+                name: '',
+                type: 'pie',
+                radius: [50, 160],
+                center: ['50%', '45%'],
+                roseType: 'area',
+                itemStyle: {
+                    borderRadius: 8
+                },
+                data: []
+            }
+        ]
+    };
+
+    myChart2.setOption(option2);
+    $.get('{{ url_for('main.bookstatics_api2') }}').done(function (data) {
+        // 填入数据
+        console.log(data.data)
+        myChart2.setOption({
+            series: [{
+                data: data.data
+            }]
+        });
+    });
+
+</script>
+
+{% endblock %}

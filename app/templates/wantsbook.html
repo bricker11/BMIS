@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block card_header %}
+<span><a href="/index"> 采购计划 / </a></span><span>读者想看</span>
+{% endblock %}
+
+
+{% block card_body %}
+
+    <!-- 数据表格区域 -->
+    <div style="margin-top: 20px">
+        <table id="wantslist" lay-filter="wantslist"></table>
+    </div>
+
+    <div id="optionbtn" hidden>
+        <button type="button" class="layui-btn layui-btn-xs layui-btn-warm ignore">
+        忽略
+        </button>
+    </div>
+
+
+{% endblock %}
+
+
+{% block script %}
+<script src="../static/layui/layui.js"></script>
+<script src="../static/jquery/jquery.min.js"></script>
+<script>
+layui.use(['layer'], function(){
+    var layer = layui.layer
+    {% for message in get_flashed_messages() %}
+        layer.msg('{{ message }}');
+    {% endfor %}
+});
+
+layui.use('form', function(){
+  var form = layui.form;
+});
+
+layui.use('table', function(){
+  var table = layui.table;
+
+  <!-- 表格渲染 -->
+  table.render({
+    elem: '#wantslist'
+    ,height: 450
+    ,url: '{{ url_for('main.wantslist_api') }}' //数据接口
+    ,page: true //开启分页
+    ,loading: true
+    ,cols: [[ //表头
+      {field: 'sno', title: '序号', width:80, fixed: 'left'}
+      ,{field: 'bookname', title: '书名', width:220, align:'center'}
+      ,{field: 'author', title: '作者', width: 160, align:'center'}
+      ,{field: 'press', title: '出版社', width: 160, sort: true, align:'center'}
+      ,{field: 'price', title: '售价', width: 160, sort: true, align:'center'}
+      ,{field: 'name', title: '申请人', width:120, align:'center'}
+      ,{field: 'time', title: '申请时间', width:120, align:'center'}
+      ,{field: 'opration', title: '操作', width: 160, align:'center', templet: '#optionbtn'}
+    ]]
+    ,done:function (){
+        //为内嵌按钮绑定事件
+        $(".ignore").click(function(e) {
+            var id = e.currentTarget.parentNode.parentNode.parentNode.childNodes[0].innerText
+            console.log(id)
+            layer.open({
+                content: '确认忽略？',
+                yes: function(index, layero){
+                    $.post('{{ url_for('main.wantsignore_api') }}', {id:id}, function(str){
+                        console.log('请求完毕')
+                    })
+                    layer.close(index); //如果设定了yes回调，需进行手工关闭
+                    location.reload();
+                }
+            });
+
+        })
+      }
+  });
+
+});
+</script>
+{% endblock %}

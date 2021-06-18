@@ -1,0 +1,1 @@
+在windows下的pycharm中打开本项目时，在建立虚拟环境venv之后，需将sqlite3.dll拷贝至venv/Scripts中，否则数据库将无法正常运行，表现为浏览器报‘server internal error’。

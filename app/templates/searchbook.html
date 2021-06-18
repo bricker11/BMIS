@@ -1,0 +1,497 @@
+{% extends 'base.html' %}
+
+{% block card_header %}
+<span><a href="/index"> 图书管理 / </a></span><span>图书查找</span>
+{% endblock %}
+
+
+{% block card_body %}
+    <!-- 搜索区域 -->
+    <div class="layui-row">
+        <div class="layui-row layui-col-md6">
+            <form class="layui-form" method="post" id="searchform">
+                <div class="layui-row">
+                <div class="layui-row layui-col-md6">
+                    <label class="layui-form-label">筛选条件：</label>
+                    <div class="layui-input-block">
+                        {{ form.option }}
+                    </div>
+                </div>
+
+                <div class="layui-row layui-col-md6">
+                    <label class="layui-form-label">关键词：</label>
+                    <div class="layui-input-block">
+                      {{ form.key(class="layui-input",placeholder="请输入搜索内容") }}
+                    </div>
+                </div>
+
+            </div>
+            </form>
+        </div>
+        <div class="layui-row layui-col-md6">
+            <div class="layui-input-block" style="margin-left: 20px">
+              <button class="layui-btn" lay-submit lay-filter="formDemo">
+                  <i class="layui-icon layui-icon-search layuiadmin-button-btn" id="search2"></i>
+              </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 数据表格区域 -->
+    <div style="margin-top: 20px">
+        <table id="booklist" lay-filter="booklist"></table>
+    </div>
+
+    <!-- 表格内嵌按钮 -->
+    <div class="detailbtn" hidden>
+        <button type="button" class="layui-btn layui-btn-xs detailbtn">
+        详情
+        </button>
+    </div>
+    <div class="optionbtn" hidden>
+        <button type="button" class="layui-btn layui-btn-xs layui-btn-normal editbtn">
+        修改
+        </button>
+        <button type="button" class="layui-btn layui-btn-xs layui-btn-danger deletebtn">
+        删除
+        </button>
+    </div>
+
+{% endblock %}
+
+<!-- 弹出层内容 -->
+{% block outest %}
+    <!-- 弹出层表格 -->
+    <table class="layui-table" id="layer" hidden>
+        <colgroup>
+            <col width="100">
+            <col width="100">
+            <col width="100">
+            <col width="80">
+            <col width="80">
+        </colgroup>
+        <thead>
+            <tr>
+              <th>书名</th>
+              <th>作者</th>
+              <th>出版社</th>
+              <th>借阅者</th>
+              <th>借阅时间</th>
+            </tr>
+        </thead>
+        <tbody id="layerbody">
+
+        </tbody>
+    </table>
+
+    <!-- 弹出层表单 -->
+    <div class="layui-row"  id="editlayer" style="display: none">
+        <div class="layui-row layui-col-md8">
+            <form class="layui-form" id="editlayer" method="post" action="{{ url_for('main.bookedit_api2') }}">
+                <div class="layui-form-item" style="margin-top: 20px">
+                    <label class="layui-form-label">ISBN：</label>
+                    <div class="layui-input-inline formedit" id="isbn">
+
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">书名：</label>
+                    <div class="layui-input-inline formedit" id="name">
+
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">作者：</label>
+                    <div class="layui-input-inline formedit" id="author">
+
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">出版社：</label>
+                    <div class="layui-input-inline formedit" id="press">
+
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">位置：</label>
+                    <div class="layui-input-inline formedit" id="location">
+
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">简介：</label>
+                    <div class="layui-input-inline formedit" id="intro">
+
+                    </div>
+                </div>
+                <div class="layui-input-inline login-btn formedit" id="sub" style="margin-left:120px;margin-bottom: 20px">
+
+                </div>
+                <!-- 隐藏元素，用于传输封面url -->
+                <div class="layui-form-item" hidden>
+                    <label class="layui-form-label"></label>
+                    <div class="layui-input-inline formedit" id="formcoverurl">
+
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="layui-row layui-col-md4">
+            <img src="../static/img/cover/defaultcover.jpg" style="height: 180px;width: 140px;
+            margin-top: 30px" id="pagecover2">
+        </div>
+    </div>
+    
+{% endblock %}
+
+
+{% block script %}
+<script src="../static/layui/layui.js"></script>
+<script src="../static/jquery/jquery.min.js"></script>
+<script>
+
+layui.use(['layer'], function(){
+    var layer = layui.layer
+    {% for message in get_flashed_messages() %}
+        layer.msg('{{ message }}');
+    {% endfor %}
+});
+
+layui.use('form', function(){
+  var form = layui.form;
+});
+
+layui.use('table', function(){
+  var table = layui.table;
+  <!-- 表格渲染 -->
+  table.render({
+    elem: '#booklist'
+    ,height: 450
+    ,url: '{{ url_for('main.booklist_api') }}' //数据接口
+    ,page: true //开启分页
+    ,loading: true
+    ,cols: [[ //表头
+      {field: 'sno', title: '序号', width:60, fixed: 'left'}
+      ,{field: 'isbn', title: 'ISBN', width:120, align:'center'}
+      ,{field: 'name', title: '书名', width:200, sort: true, align:'center'}
+      ,{field: 'author', title: '作者', width:110, align:'center'}
+      ,{field: 'press', title: '出版社', width: 150, align:'center'}
+      ,{field: 'category', title: '分类', width: 120, sort: true, align:'center'}
+      ,{field: 'location', title: '位置', width: 100, sort: true, align:'center'}
+      ,{field: 'total', title: '总数', width: 80, align:'center'}
+      ,{field: 'free', title: '可借', width: 80, align:'center'}
+      ,{field: 'borrower', title: '借阅者', width: 80, align:'center', templet: '.detailbtn'}
+      ,{field: 'opration', title: '操作', width: 160, align:'center', templet: '.optionbtn'}
+    ]]
+      //必须等表格渲染完成后才能绑定事件
+    ,done:function (){
+        //为内嵌按钮绑定事件
+        $(".detailbtn").click(function(e){
+          //获得isbn
+          var isbn = e.currentTarget.parentNode.parentNode.parentNode.childNodes[1].innerText
+          //弹出层根据 isbn 请求数据并弹出
+          layui.use('layer',function (){
+              $.post('{{ url_for('main.bookdetail_api') }}', {isbn:isbn}, function(str){
+                console.log(str)
+                // 动态填充借阅者表格
+                $("#layerbody").empty()
+                for(var i=0; i< str.count; i++)
+                {
+                    $("#layerbody").append('<tr><td>'+str.data[i].bookname+'</td>'+
+                                        '<td>'+str.data[i].author+'</td>'+
+                                        '<td>'+str.data[i].press+'</td>'+
+                                        '<td>'+str.data[i].borrower+'</td>'+
+                                        '<td>'+str.data[i].date+'</td></tr>');
+                }
+
+                layer.open({
+                type: 1,
+                content:$("#layer"),
+                skin: 'layui-layer-molv',
+                area: '800px'
+                });
+              });
+            })
+        });
+        $(".editbtn").click(function(e) {
+            var isbn = e.currentTarget.parentNode.parentNode.parentNode.childNodes[1].innerText
+            layui.use('layer',function (){
+              $.post('{{ url_for('main.bookedit_api') }}', {isbn:isbn}, function(str){
+                //console.log(str)
+                // 动态填充借阅者表格
+                $(".formedit").empty()
+                $("#isbn").append('<input type="text" class="layui-input" name="isbn" value="' + str.isbn.toString() + '">')
+                $("#name").append('<input type="text" class="layui-input" name="name" value="' + str.name + '">')
+                $("#author").append('<input type="text" class="layui-input" name="author" value="' + str.author + '">')
+                $("#press").append('<input type="text" class="layui-input" name="press" value="' + str.press + '">')
+                $("#category").append('<input type="text" class="layui-input" name="category" value="' + str.category + '">')
+                $("#location").append('<input type="text" class="layui-input" name="location" value="' + str.location + '">')
+                $("#intro").append('<input type="text" class="layui-input" name="intro" value="' + str.intro + '">')
+                $("#formcoverurl").append('<input type="text" class="layui-input" name="cover" value="' + str.cover + '" id="forminputcover">')
+                $("#sub").append('<input type="submit" class="layui-btn" value="修改" id="editsubmit">')
+                //显示旧封面
+                if(str.cover != 'lost')
+                {
+                     $("#pagecover2").attr('src',str.cover)
+                    $("#forminputcover").val(str.cover)
+                }
+                 //console.log(str.cover)
+                  //console.log($("#forminputcover").val())
+
+                  layui.use('upload', function(){
+                      var upload = layui.upload;
+                      //执行实例
+                      var uploadFile = upload.render({
+                            elem: '#pagecoverbtn2',
+                            url: '{{ url_for('main.add_bookcover_api') }}',
+                            accept: 'images',
+                            acceptMime: 'image/jpeg',
+                            headers: {access_token: localStorage.access_token},
+                            auto: false,
+                            bindAction:'#pagecoverbtn3',
+                            data:{username:$("#uname").val()},
+                            choose: function(obj){
+                                obj.preview(function(index, file, result){
+                                    $("#pagecover2").attr('src',result);
+                                });
+                              }
+                          , done: function (res) {
+                                //上传完毕回调
+                                layer.close(layer.index); //关闭loading
+                                // 将返回的 url 赋给form表单的隐藏元素
+                                $("#forminputcover").val(res.data['src'])
+                                console.log($("#forminputcover").val())
+                            }
+                            , error: function (res) {
+                                //请求异常回调
+                                console.error(res);
+                            }
+                        });
+
+                    });
+
+                layer.open({
+                type: 1,
+                content:$("#editlayer"),
+                skin: 'layui-layer-molv',
+                area: '550px',
+                cancel: function(){
+                    $("#editlayer").hide()
+                }
+                });
+              });
+            })
+        })
+        $(".deletebtn").click(function(e){
+            //获得isbn
+            var isbn = e.currentTarget.parentNode.parentNode.parentNode.childNodes[1].innerText
+            layer.open({
+                content: '确认删除？',
+                yes: function(index, layero){
+                    $.post('{{ url_for('main.bookdelete_api') }}', {isbn:isbn}, function(str){
+                        if(str.status == 0)
+                        {
+                            layer.open({
+                            content: '删除成功',
+                            yes: function(index, layero){
+                                layer.close(index);
+                                location.reload();
+                            }
+                            })
+                        }
+                        else
+                        {
+                            layer.open({
+                            content: '该图书正在被借阅，无法删除',
+                            yes: function(index, layero){
+                                layer.close(index);
+                                location.reload();
+                            }
+                            })
+                        }
+                    })
+                    layer.close(index); //如果设定了yes回调，需进行手工关闭
+                    //location.reload();
+                }
+            });
+        });
+      }
+  });
+});
+
+$("#sub").click(function (){
+    $("#editlayer").hide()
+})
+
+$("#search2").on('click',function (){
+    var form = new FormData(document.getElementById("searchform"))
+    console.log(form.getAll('key'))
+    $.ajax({
+        url: "{{ url_for('main.searchbook_api') }}",
+        type: "post",
+        data: form,
+        processData: false,
+        contentType: false,
+        success:function (data){
+            console.log(data)
+            layui.use('table', function(){
+              var table2 = layui.table;
+              <!-- 表格渲染 -->
+              table2.render({
+                elem: '#booklist'
+                ,height: 450
+                ,data:data.data
+                ,page: true //开启分页
+                ,loading: true
+                ,cols: [[ //表头
+                  {field: 'sno', title: '序号', width:60, fixed: 'left'}
+                  ,{field: 'isbn', title: 'ISBN', width:120, align:'center'}
+                  ,{field: 'name', title: '书名', width:200, sort: true, align:'center'}
+                  ,{field: 'author', title: '作者', width:110, align:'center'}
+                  ,{field: 'press', title: '出版社', width: 150, align:'center'}
+                  ,{field: 'category', title: '分类', width: 120, sort: true, align:'center'}
+                  ,{field: 'location', title: '位置', width: 100, sort: true, align:'center'}
+                  ,{field: 'total', title: '总数', width: 80, align:'center'}
+                  ,{field: 'free', title: '可借', width: 80, align:'center'}
+                  ,{field: 'borrower', title: '借阅者', width: 80, align:'center', templet: '.detailbtn'}
+                  ,{field: 'opration', title: '操作', width: 160, align:'center', templet: '.optionbtn'}
+                ]]
+                  //必须等表格渲染完成后才能绑定事件
+                ,done:function (){
+        //为内嵌按钮绑定事件
+        $(".detailbtn").click(function(e){
+          //获得isbn
+          var isbn = e.currentTarget.parentNode.parentNode.parentNode.childNodes[1].innerText
+          //弹出层根据 isbn 请求数据并弹出
+          layui.use('layer',function (){
+              $.post('{{ url_for('main.bookdetail_api') }}', {isbn:isbn}, function(str){
+                console.log(str)
+                // 动态填充借阅者表格
+                $("#layerbody").empty()
+                for(var i=0; i< str.count; i++)
+                {
+                    $("#layerbody").append('<tr><td>'+str.data[i].bookname+'</td>'+
+                                        '<td>'+str.data[i].author+'</td>'+
+                                        '<td>'+str.data[i].press+'</td>'+
+                                        '<td>'+str.data[i].borrower+'</td>'+
+                                        '<td>'+str.data[i].date+'</td></tr>');
+                }
+
+                layer.open({
+                type: 1,
+                content:$("#layer"),
+                skin: 'layui-layer-molv',
+                area: '800px'
+                });
+              });
+            })
+        });
+        $(".editbtn").click(function(e) {
+            var isbn = e.currentTarget.parentNode.parentNode.parentNode.childNodes[1].innerText
+            layui.use('layer',function (){
+              $.post('{{ url_for('main.bookedit_api') }}', {isbn:isbn}, function(str){
+                //console.log(str)
+                // 动态填充借阅者表格
+                //$("#editlayer").removeAttr('hidden')
+                $(".formedit").empty()
+                $("#isbn").append('<input type="text" class="layui-input" name="isbn" value="' + str.isbn.toString() + '">')
+                $("#name").append('<input type="text" class="layui-input" name="name" value="' + str.name + '">')
+                $("#author").append('<input type="text" class="layui-input" name="author" value="' + str.author + '">')
+                $("#press").append('<input type="text" class="layui-input" name="press" value="' + str.press + '">')
+                $("#category").append('<input type="text" class="layui-input" name="category" value="' + str.category + '">')
+                $("#location").append('<input type="text" class="layui-input" name="location" value="' + str.location + '">')
+                $("#intro").append('<input type="text" class="layui-textarea" name="intro" value="' + str.intro + '">')
+                $("#formcoverurl").append('<input type="text" class="layui-input" name="cover" value="' + str.cover + '" id="forminputcover">')
+                $("#sub").append('<input type="submit" class="layui-btn" value="修改" id="editsubmit">')
+                //显示旧封面
+                if(str.cover != 'lost')
+                {
+                     $("#pagecover2").attr('src',str.cover)
+                    $("#forminputcover").val(str.cover)
+                }
+                 //console.log(str.cover)
+                  //console.log($("#forminputcover").val())
+
+                  layui.use('upload', function(){
+                      var upload = layui.upload;
+                      //执行实例
+                      var uploadFile = upload.render({
+                            elem: '#pagecoverbtn2',
+                            url: '{{ url_for('main.add_bookcover_api') }}',
+                            accept: 'images',
+                            acceptMime: 'image/jpeg',
+                            headers: {access_token: localStorage.access_token},
+                            auto: false,
+                            bindAction:'#pagecoverbtn3',
+                            data:{username:$("#uname").val()},
+                            choose: function(obj){
+                                obj.preview(function(index, file, result){
+                                    $("#pagecover2").attr('src',result);
+                                });
+                              }
+                          , done: function (res) {
+                                //上传完毕回调
+                                layer.close(layer.index); //关闭loading
+                                // 将返回的 url 赋给form表单的隐藏元素
+                                $("#forminputcover").val(res.data['src'])
+                                console.log($("#forminputcover").val())
+                            }
+                            , error: function (res) {
+                                //请求异常回调
+                                console.error(res);
+                            }
+                        });
+
+                    });
+
+                layer.open({
+                type: 1,
+                content:$("#editlayer"),
+                skin: 'layui-layer-molv',
+                area: '550px'
+                });
+              });
+            })
+        })
+        $(".deletebtn").click(function(e){
+            //获得isbn
+            var isbn = e.currentTarget.parentNode.parentNode.parentNode.childNodes[1].innerText
+            layer.open({
+                content: '确认删除？',
+                yes: function(index, layero){
+                    $.post('{{ url_for('main.bookdelete_api') }}', {isbn:isbn}, function(str){
+                        if(str.status == 0)
+                        {
+                            layer.open({
+                            content: '删除成功',
+                            yes: function(index, layero){
+                                layer.close(index);
+                                location.reload();
+                            }
+                            })
+                        }
+                        else
+                        {
+                            layer.open({
+                            content: '该图书正在被借阅，无法删除',
+                            yes: function(index, layero){
+                                layer.close(index);
+                                location.reload();
+                            }
+                            })
+                        }
+                    })
+                    layer.close(index); //如果设定了yes回调，需进行手工关闭
+                    //location.reload();
+                }
+            });
+        });
+      }
+  });
+            });
+        }
+    })
+})
+
+</script>
+{% endblock %}

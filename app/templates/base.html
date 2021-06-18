@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>图书管理系统</title>
+    <link rel="stylesheet" type="text/css" href="../static/layui/css/layui.css">
+    <script type="text/javascript" href="../static/bootstrap/jquery.min.js"></script>
+    <script type="text/javascript" href="../static/layui/layui.js"></script>
+    <script type="text/javascript" href="../static/main.js"></script>
+    <link rel="icon" href="../static/img/favicon.ico" type="image/x-icon">
+</head>
+<body class="layui-layout-body">
+<div class="layui-layout layui-layout-admin">
+    <!-- 页面头部 -->
+    <div class="layui-header" style="background: #134556">
+        <div class="layui-logo layui-layout-left">
+            <a class="layui-logo" href="/index">
+                <div class="layui-row">
+                    <div class="layui-row layui-col-md3" style="text-align: right"><img src="../static/img/logo.png" style="height: 20px;width: 20px;"></div>
+                    <div class="layui-row layui-col-md8"><h3 style="color: #e6e6e6">图书管理系统</h3></div>
+                </div>
+            </a>
+        </div>
+        <ul class="layui-nav layui-layout-right">
+            <li class="" style="display: inline-block;vertical-align: middle">
+                <a href="#">
+                    <img id="headavata" src="" class="layui-nav-img">
+                </a>
+            </li>
+            <li class="layui-nav-item">
+                <a href="#"><p id="username"></p></a>
+                <dl class="layui-nav-child">
+                    <a href="{{ url_for('main.adminuser') }}">个人信息</a>
+                    <a href="{{ url_for('main.adminpasswd') }}">修改密码</a>
+                </dl>
+            </li>
+            <li class="layui-nav-item">
+                <a href="{{ url_for('main.logout') }}">退出</a>
+            </li>
+        </ul>
+    </div>
+    <!-- 侧边导航栏 -->
+    <div class="layui-side">
+        <div class="layui-side-scroll" style="background: #333">
+            <ul class="layui-nav layui-nav-tree" style="background: #333">
+                <li class="layui-nav-item">
+                    <a href="javascript:;">&nbsp&nbsp&nbsp&nbsp&nbsp<i class="layui-icon layui-icon-set"></i>&nbsp系统管理</a>
+                    <dl class="layui-nav-child">
+                        <dd class="layui-this">
+                            <a href="{{ url_for('main.sysinfo') }}">&nbsp&nbsp&nbsp&nbsp&nbsp系统设置</a>
+                        </dd>
+                        <dd class="layui-this">
+                            <a href="{{ url_for('main.adminuser') }}">&nbsp&nbsp&nbsp&nbsp&nbsp个人中心</a>
+                        </dd>
+                    </dl>
+                </li>
+
+                <li class="layui-nav-item">
+                    <a href="javascript:;">&nbsp&nbsp&nbsp&nbsp&nbsp<i class="layui-icon layui-icon-template-1"></i>&nbsp图书管理</a>
+                    <dl class="layui-nav-child">
+                        <dd class="layui-this">
+                            <a href="{{ url_for('main.addbook') }}">&nbsp&nbsp&nbsp&nbsp&nbsp图书入库</a>
+                        </dd>
+                        <dd class="layui-this">
+                            <a href="{{ url_for('main.searchbook') }}">&nbsp&nbsp&nbsp&nbsp&nbsp图书查找</a>
+                        </dd>
+                        <dd class="layui-this">
+                            <a href="{{ url_for('main.bookstatics') }}">&nbsp&nbsp&nbsp&nbsp&nbsp图书统计</a>
+                        </dd>
+                    </dl>
+                </li>
+
+                <li class="layui-nav-item">
+                    <a href="javascript:;">&nbsp&nbsp&nbsp&nbsp&nbsp<i class="layui-icon layui-icon-user"></i>&nbsp读者管理</a>
+                    <dl class="layui-nav-child">
+                        <dd class="layui-this">
+                            <a href="{{ url_for('main.readerinfo') }}">&nbsp&nbsp&nbsp&nbsp&nbsp读者信息</a>
+                        </dd>
+                        <dd class="layui-this">
+                            <a href="{{ url_for('main.readerstatics') }}">&nbsp&nbsp&nbsp&nbsp&nbsp读者统计</a>
+                        </dd>
+                    </dl>
+                </li>
+
+                <li class="layui-nav-item">
+                    <a href="javascript:;">&nbsp&nbsp&nbsp&nbsp&nbsp<i class="layui-icon layui-icon-form"></i>&nbsp图书借还</a>
+                    <dl class="layui-nav-child">
+                        <dd class="layui-this">
+                            <a href="{{ url_for('main.borrowbook') }}">&nbsp&nbsp&nbsp&nbsp&nbsp图书借阅</a>
+                        </dd>
+                        <dd class="layui-this">
+                            <a href="{{ url_for('main.returnbook') }}">&nbsp&nbsp&nbsp&nbsp&nbsp图书归还</a>
+                        </dd>
+                    </dl>
+                </li>
+
+                <li class="layui-nav-item">
+                    <a href="javascript:;">&nbsp&nbsp&nbsp&nbsp&nbsp<i class="layui-icon layui-icon-survey"></i>&nbsp采购计划</a>
+                    <dl class="layui-nav-child">
+                        <dd class="layui-this">
+                            <a href="{{ url_for('main.wantsbook') }}">&nbsp&nbsp&nbsp&nbsp&nbsp读者想看</a>
+                        </dd>
+                    </dl>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <!-- 主体内容 -->
+    <div class="layui-body">
+        <div class="layui-row">
+            <div class="layui-card-header">
+                <h2>{% block card_header %}{% endblock %}</h2>
+            </div>
+            <div class="layui-fluid">
+                <div class="layui-card-body">
+                    {% block card_body %}
+                    {% endblock %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 页面底部 -->
+    <div class="layui-footer">
+        <p>Copyright 2021 Information Management System Course</p>
+    </div>
+</div>
+
+<script src="../static/layui/layui.js"></script>
+<script src="../static/jquery/jquery.min.js"></script>
+<script>
+    layui.use('element',function (){
+        var element = layui.element
+        element.init()
+    })
+</script>
+
+<!-- 标题栏显示当前登录的用户名 -->
+<script>
+    $.post('{{ url_for('main.username_api') }}',function (data){
+        $("#username").text(data.username)
+        username = data.username;
+        $.post('{{ url_for('main.get_avata_url_api') }}',{username:username},function (str){
+            avata_url = str.url;
+            //console.log(avata_url)
+            if(avata_url == 'lost')
+            {
+                avata_url = "../static/img/avata/defaultavata.jpg"
+                $("#headavata").attr("src",avata_url)
+            }
+            else
+                $("#headavata").attr("src",avata_url)
+        })
+    })
+</script>
+
+{% block script %}
+{% endblock %}
+
+{% block outest %}
+{% endblock %}
+
+</body>
+</html>

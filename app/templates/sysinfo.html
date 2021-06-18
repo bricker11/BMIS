@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block card_header %}
+<span><a href="/index"> 系统管理 / </a></span><span>系统设置</span>
+{% endblock %}
+
+
+{% block card_body %}
+<form class="layui-form" method="post">
+    {{ form.csrf_token}}
+    <div class="layui-form-item">
+    <label class="layui-form-label" style="width: 120px">最大注册人数：</label>
+    <div class="layui-input-block" style="width: 200px;float: left">
+        {{ form.maxuser(class="layui-input") }}
+    </div>
+    </div>
+
+    <div class="layui-form-item">
+    <label class="layui-form-label" style="width: 120px">单人借阅上限：</label>
+    <div class="layui-input-block" style="width: 200px;float: left">
+        {{ form.maxbook(class="layui-input") }}
+    </div>
+    </div>
+
+    <div class="layui-form-item">
+    <label class="layui-form-label" style="width: 120px">读者借阅期限：</label>
+    <div class="layui-input-block" style="width: 200px;float: left">
+        {{ form.maxtime(class="layui-input") }}
+    </div>
+    </div>
+
+    <div class="layui-form-item" style="margin-top: 80px;margin-left: 80px">
+        <div class="layui-input-block">
+            {{ form.submit(class="layui-btn")}}
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block script %}
+
+
+<script src="../static/layui/layui.js"></script>
+<script>
+layui.use(['layer'], function(){
+    var layer = layui.layer
+    {% for message in get_flashed_messages() %}
+        layer.msg('{{ message }}');
+    {% endfor %}
+});
+
+layui.use('form', function(){
+  var form = layui.form;
+});
+</script>
+{% endblock %}

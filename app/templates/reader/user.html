@@ -1,0 +1,121 @@
+{% extends 'reader/base.html' %}
+
+{% block card_header %}
+<span><a href="/reader/index"> 个人中心 / </a></span><span>个人信息</span>
+{% endblock %}
+
+
+{% block card_body %}
+    <form class="layui-form" method="post" id="adminuserform">
+        {{ form.csrf_token}}
+        <div class="layui-row" style="margin-top: 10px ">
+            <div class="layui-row layui-col-md4">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">用户名：</label>
+                    <div class="layui-input-inline">
+                        {{ form.username(class="layui-input",placeholder="",autocomplete="on",readonly="true") }}
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">性别：</label>
+                    <div class="layui-input-inline">
+                        {% if form.gender.data == 1 %}
+                            {{ form.gender(class="layui-input",placeholder="",autocomplete="on",readonly="true",value="男") }}
+                        {% else %}
+                            {{ form.gender(class="layui-input",placeholder="",autocomplete="on",readonly="true",value="女") }}
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">单位：</label>
+                    <div class="layui-input-inline">
+                        {{ form.depart(class="layui-input",placeholder="",autocomplete="on") }}
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">联系方式：</label>
+                    <div class="layui-input-inline">
+                        {{ form.contact(class="layui-input",placeholder="",autocomplete="on") }}
+                    </div>
+                </div>
+            </div>
+            <div class="layui-row layui-col-md4">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">姓名：</label>
+                    <div class="layui-input-inline">
+                        {{ form.name(class="layui-input",placeholder="",autocomplete="on") }}
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">证件号：</label>
+                    <div class="layui-input-inline">
+                        {{ form.id(class="layui-input",placeholder="",autocomplete="on",readonly="true") }}
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">职务：</label>
+                    <div class="layui-input-inline">
+                        {{ form.post(class="layui-input",placeholder="",autocomplete="on") }}
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">房间号：</label>
+                    <div class="layui-input-inline">
+                        {{ form.room(class="layui-input",placeholder="",autocomplete="on") }}
+                    </div>
+                </div>
+            </div>
+            <div class="layui-row layui-col-md4">
+                <div style="height: 150px;width: 120px;text-align: center;">
+                    <img id="avata" src="../../static/img/avata/defaultavata.jpg" style="height: 150px;width: 150px;margin-top: 20px">
+                </div>
+
+            </div>
+        </div>
+
+        <div class="layui-row layui-col-md-offset3" style="margin-top: 30px">
+            <div class="layui-input-inline login-btn">
+                {{ form.submit(class="layui-btn") }}
+            </div>
+        </div>
+    </form>
+
+{% endblock %}
+
+
+{% block script %}
+<script src="../../static/layui/layui.js"></script>
+<script src="../../static/jquery/jquery.min.js"></script>
+<script>
+layui.use(['layer'], function(){
+    var layer = layui.layer
+    {% for message in get_flashed_messages() %}
+        layer.msg('{{ message }}');
+    {% endfor %}
+});
+
+layui.use('form', function(){
+  var form = layui.form;
+});
+
+</script>
+
+<script>
+    $(window).load(function (){
+        var form = new FormData(document.getElementById("adminuserform"))
+        var username = form.getAll('username')
+        $.post('{{ url_for('main.get_avata_url_api') }}',{username:username},function (str){
+            avata_url = str.url;
+            console.log(avata_url)
+            if(avata_url == 'lost')
+            {
+                avata_url = "../../static/img/avata/defaultavata.jpg";
+                console.log(avata_url)
+                $("#avata").attr("src",avata_url)
+            }
+            else
+                $("#avata").attr("src",avata_url)
+        })
+    })
+</script>
+{% endblock %}

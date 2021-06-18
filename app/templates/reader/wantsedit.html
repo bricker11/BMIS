@@ -1,0 +1,67 @@
+{% extends 'reader/base.html' %}
+
+{% block card_header %}
+    <span><a href="/reader/index"> 采购申请 / </a></span><span>想看的书</span>
+{% endblock %}
+
+{% block card_body %}
+<div class="layui-row">
+<div class="layui-row layui-col-md4">
+    <form class="layui-form" method="post">
+        <!-- 必须添加 form.csrf_token ,否则表单验证不通过 -->
+        {{ form.csrf_token }}
+        <!-- 必须添加 form.csrf_token ,否则表单验证不通过 -->
+        <div class="layui-form-item">
+            <label class="layui-form-label">书名：</label>
+            <div class="layui-input-inline">
+                {{ form.name(class="layui-input",placeholder="",autocomplete="on") }}
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">作者：</label>
+            <div class="layui-input-inline">
+                {{ form.author(class="layui-input",placeholder="",autocomplete="on") }}
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">出版社：</label>
+            <div class="layui-input-inline">
+                {{ form.press(class="layui-input",placeholder="",autocomplete="on") }}
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">类别：</label>
+            <div class="layui-input-inline">
+                {{ form.category }}
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">售价：</label>
+            <div class="layui-input-inline">
+                {{ form.price(class="layui-input",placeholder="",autocomplete="on") }}
+            </div>
+        </div>
+        <div class="layui-input-inline login-btn" style="margin-left: 150px;margin-top: 40px">
+            {{ form.submit(class="layui-btn") }}
+        </div>
+    </form>
+</div>
+<div class="layui-row layui-col-md4">
+    <img src="../../static/img/cover/defaultcover.jpg" style="width: 150px;height: 200px">
+</div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script src="../../static/layui/layui.js"></script>
+<script>
+layui.use(['layer','form'], function(){
+    var layer = layui.layer;
+    var form = layui.form;
+    {% for message in get_flashed_messages() %}
+        layer.msg('{{ message }}');
+    {% endfor %}
+});
+
+</script>
+{% endblock %}

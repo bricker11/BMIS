@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block card_header %}
+<span><a href="/index"> 读者管理 / </a></span><span>读者统计</span>
+{% endblock %}
+
+{% block card_body %}
+<div class="layui-row">
+    <div class="layui-row layui-col-md5" >
+        <div id="pie" style="width: 100%;height:400px;"></div>
+        <div style="margin-top: 30px;text-align: center">
+            <p>读者借阅量分布图</p>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block script %}
+
+<script src="../static/layui/layui.js"></script>
+<script>
+layui.use(['layer'], function(){
+    var layer = layui.layer
+    {% for message in get_flashed_messages() %}
+        layer.msg('{{ message }}');
+    {% endfor %}
+});
+</script>
+
+<script src="../static/echart/echarts.min.js"></script>
+<script src="../static/jquery/jquery.min.js"></script>
+
+<script type="text/javascript">
+    var myChart = echarts.init(document.getElementById('pie'));
+    var option;
+
+    option = {
+        title: {
+            text: '',
+            subtext: '',
+            left: 'center'
+        },
+        tooltip: {
+            trigger: 'item',
+            formatter: '{a} <br/>{b} : {c} ({d}%)'
+        },
+        legend: {
+            bottom: 10,
+            left: 'center',
+            data: ['1本', '2本', '3本', '4本', '5本']
+        },
+        series: [
+            {
+                type: 'pie',
+                radius: '65%',
+                center: ['50%', '50%'],
+                selectedMode: 'single',
+                data: [],
+                emphasis: {
+                    itemStyle: {
+                        shadowBlur: 10,
+                        shadowOffsetX: 0,
+                        shadowColor: 'rgba(0, 0, 0, 0.5)'
+                    }
+                }
+            }
+        ]
+    };
+    myChart.setOption(option);
+    $.get('{{ url_for('main.readerstatics_api') }}').done(function (data) {
+        // 填入数据
+        console.log(data.data)
+        myChart.setOption({
+            series: [{
+                data: data.data
+            }]
+        });
+    });
+
+
+</script>
+
+{% endblock %}

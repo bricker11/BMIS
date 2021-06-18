@@ -1,0 +1,44 @@
+$("#regavata").click(function (){
+    if($("#uname").val() != '')
+    {
+        layui.use('upload', function(){
+              var upload = layui.upload;
+              //执行实例
+              var uploadFile = upload.render({
+                    elem: '#regavata',
+                    url: '{{ url_for('main.register_avata_api') }}',
+                    accept: 'images',
+                    acceptMime: 'image/jpeg',
+                    headers: {access_token: localStorage.access_token},
+                    auto: false,
+                    bindAction:'#regsubmit',
+                    data:{username:$("#uname").val()},
+                    choose: function(obj){
+                        obj.preview(function(index, file, result){
+                            $("#avataid").attr('src',result);
+                            console.log(file)
+                        });
+                      }
+                  , done: function (res) {
+                        //上传完毕回调
+                        layer.close(layer.index); //关闭loading
+                        console.log(res)
+                        // 发起一个ajax请求修改刚上传的图片名为刚注册的用户名
+
+                    }
+                    , error: function (res) {
+                        //请求异常回调
+                        console.error(res);
+                    }
+                });
+
+            });
+    }
+    else
+    {
+        layui.use(['layer'], function(){
+            var layer = layui.layer
+            layer.msg('请先输入用户名')
+        });
+    }
+})

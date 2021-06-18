@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block card_header %}
+<span><a href="/index"> 首页 / </a></span><span>修改密码</span>
+{% endblock %}
+
+
+{% block card_body %}
+    <form class="layui-form" method="post">
+        {{ form.csrf_token}}
+        <div class="layui-row" style="margin-top: 10px ">
+            <div class="layui-row layui-col-md4">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">新的密码：</label>
+                    <div class="layui-input-inline">
+                        {{ form.password(class="layui-input",placeholder="请输入新密码",autocomplete="on") }}
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">确认密码：</label>
+                    <div class="layui-input-inline">
+                        {{ form.password2(class="layui-input",placeholder="请确认密码",autocomplete="on") }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-row layui-col-md-offset3" style="margin-top: 30px">
+            <div class="layui-input-inline login-btn">
+                {{ form.submit(class="layui-btn") }}
+            </div>
+        </div>
+    </form>
+
+{% endblock %}
+
+
+{% block script %}
+<script src="../static/layui/layui.js"></script>
+<script>
+layui.use(['layer'], function(){
+    var layer = layui.layer
+    {% for message in get_flashed_messages() %}
+        layer.msg('{{ message }}');
+    {% endfor %}
+});
+
+layui.use('form', function(){
+  var form = layui.form;
+});
+
+</script>
+{% endblock %}
